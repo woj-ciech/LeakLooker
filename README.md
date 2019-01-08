@@ -3,6 +3,10 @@ Find open databases with Shodan
 
 ## Requirements:
 Python 3
+
+Shodan paid plan, except Kibana search
+
+***Put your Shodan API key in line 65***
 ```
 pip3 install shodan
 pip3 install colorama
