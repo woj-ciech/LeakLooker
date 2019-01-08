@@ -1,6 +1,10 @@
 # LeakLooker
 Find open databases with Shodan
 
+Background:
+
+https://medium.com/@woj_ciech/leaklooker-find-open-databases-in-a-second-9da4249c8472
+
 ## Requirements:
 Python 3
 
