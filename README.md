@@ -10,46 +10,46 @@ Python 3
 
 Shodan paid plan, except Kibana search
 
-***Put your Shodan API key in line 65***
+***Put your Shodan API key in line 14***
 ```
-pip3 install shodan
-pip3 install colorama
-pip3 install hurry.filesize
+python3 -m pip install -r requestments.txt
 ```
 
 ## Usage
 ```
 root@kali:~/# python leaklooker.py -h
-         ,
-         )\
-        /  \
-       '  # '
-       ',  ,'
-         `'
-         ,
-         )\
-        /  \
-       '  ~ '
-       ',  ,'
-         `'
+
+                                                            ,
+                                                            )\
+ _                _    _                 _                 /  \
+| |              | |  | |               | |               '  # '
+| |     ___  __ _| | _| |     ___   ___ | | _____ _ __    ',  ,'
+| |    / _ \/ _` | |/ / |    / _ \ / _ \| |/ / _ \ '__|     `'  ,
+| |___|  __/ (_| |   <| |___| (_) | (_) |   <  __/ |            )\
+\_____/\___|\__,_|_|\_\_____/\___/ \___/|_|\_\___|_|           /  \
+                                                              '  ~ '
+                                                              ',  ,'
+                                                                `'
 LeakLooker - Find open databases
-https://medium.com/@woj_ciech https://github.com/woj-ciech/
+https://medium.com/@woj_ciech   https://github.com/woj-ciech/
 
-usage: leaklooker.py [-h] [--elastic] [--couchdb] [--mongodb] [--kibana]
-                     [--first FIRST] [--last LAST]
-
-LeakLooker
+usage: leaklooker.py [-h] [-e] [-c] [-m] [-k] [-f FIRST] [-l LAST] [-o OUTPUT]
 
 optional arguments:
-  -h, --help     show this help message and exit
-  --elastic      Elasti search (default: False)
-  --couchdb      CouchDB (default: False)
-  --mongodb      MongoDB (default: False)
-  --kibana       Kibana (default: False)
+  -h, --help            show this help message and exit
+  -e, --elastic         Elasti search (default: False)
+  -c, --couchdb         CouchDB (default: False)
+  -m, --mongodb         MongoDB (default: False)
+  -k, --kibana          Kibana (default: False)
+
+Output:
+  -o OUTPUT, --output OUTPUT
+                        Output file (default: None)
 
 Pages:
-  --first FIRST  First page (default: None)
-  --last LAST    Last page (default: None)
+  -f FIRST, --first FIRST
+                        First page (default: None)
+  -l LAST, --last LAST  Last page (default: None)
 ```
 
 ***You need to specify first and last page***
@@ -63,14 +63,14 @@ Found 25069 results
 IP: http://xxx.xxx.xxx.xxx:9200/_cat/indices?v
 Size: 1G
 Country: France
-Indices: 
+Indices:
 .monitoring-kibana-6-2019.01.08
 [...]
 ----------------------------
 IP: http://yyy.yyy.yyy.yyy:9200/_cat/indices?v
 Size: 144G
 Country: China
-Indices: 
+Indices:
 zhuanli
 hx_person
 [...]
@@ -97,12 +97,12 @@ Size: 6G
 Country: France
 Database name: Warn
 Size: 80M
-Collections: 
+Collections:
 Warn
 system.indexes
 Database name: xhprofprod
 Size: 5G
-Collections: 
+Collections:
 results
 system.indexes
 -----------------------------
@@ -111,11 +111,11 @@ Size: 544M
 Country: Ukraine
 Database name: local
 Size: 32M
-Collections: 
+Collections:
 startup_log
 Database name: ace_stat
 Size: 256M
-Collections: 
+Collections:
 stat_minute
 system.indexes
 stat_hourly
@@ -123,7 +123,7 @@ stat_daily
 [...]
 Database name: ace
 Size: 256M
-Collections: 
+Collections:
 usergroup
 system.indexes
 scheduletask
