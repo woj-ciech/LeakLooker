@@ -4,6 +4,11 @@ import json
 import shodan
 import sys
 import argparse
+import signal
+
+def signal_handler(signal, frame):
+    print("\nSearch Cancelled\n")
+    sys.exit(0)
 
 description = r"""
          ,
@@ -69,7 +74,7 @@ query_mongodb = 'product:MongoDB '
 query_couchdb = "product:couchdb "
 query_kibana = "kibana content-length: 217 "
 
-
+signal.signal(signal.SIGINT, signal_handler)
 def shodan_query(query, page):
     try:
         api = shodan.Shodan(SHODAN_API_KEY)
