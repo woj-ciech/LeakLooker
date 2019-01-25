@@ -7,7 +7,7 @@ import argparse
 import signal
 
 def signal_handler(signal, frame):
-    print("\nSearch Finished\n")
+    print("\nSearch Cancelled\n")
     sys.exit(0)
 
 description = r"""
