@@ -18,6 +18,8 @@ Background:
 
 https://medium.com/@woj_ciech/leaklooker-find-open-databases-in-a-second-9da4249c8472
 
+V2 - https://medium.com/@woj_ciech/leaklooker-v2-find-more-open-servers-and-source-code-leaks-25e671700e41
+
 ## Requirements:
 Python 3
 Shodan paid plan, except Kibana search
