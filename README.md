@@ -1,31 +1,50 @@
 # LeakLooker
 Find open databases with Shodan
 
+New version supports:
+- Elasticsearch
+- CouchDB
+- MongoDB
+- SMB
+- Gitlab
+- Rsync
+- Jenkins
+- Sonarqube
+- Kibana
+
+and custom query.
+
 Background:
 
 https://medium.com/@woj_ciech/leaklooker-find-open-databases-in-a-second-9da4249c8472
 
 ## Requirements:
 Python 3
-
 Shodan paid plan, except Kibana search
 
-***Put your Shodan API key in line 65***
+***Put your Shodan API key ina line 82***
 ```
 pip3 install shodan
 pip3 install colorama
 pip3 install hurry.filesize
+pip3 install beautifulsoup4
+```
+
+```
+pip install -r requirements.txt
 ```
 
 ## Usage
 ```
-root@kali:~/# python leaklooker.py -h
+(venv) root@kali:~/PycharmProjects/LeakLooker# python leaklooker.py -h
+
          ,
          )\
         /  \
        '  # '
        ',  ,'
          `'
+
          ,
          )\
         /  \
@@ -34,17 +53,22 @@ root@kali:~/# python leaklooker.py -h
          `'
 LeakLooker - Find open databases
 https://medium.com/@woj_ciech https://github.com/woj-ciech/
-
-usage: leaklooker.py [-h] [--elastic] [--couchdb] [--mongodb] [--kibana]
-                     [--first FIRST] [--last LAST]
-
-LeakLooker
+Example: python leaklooker.py --mongodb --couchdb --kibana --elastic --first 21 --last 37
+usage: leaklooker.py [-h] [--elastic] [--couchdb] [--mongodb] [--samba]
+                     [--gitlab] [--rsync] [--jenkins] [--sonarqube]
+                     [--query QUERY] [--kibana] [--first FIRST] [--last LAST]
 
 optional arguments:
   -h, --help     show this help message and exit
   --elastic      Elasti search (default: False)
   --couchdb      CouchDB (default: False)
   --mongodb      MongoDB (default: False)
+  --samba        Samba (default: False)
+  --gitlab       Gitlab (default: False)
+  --rsync        Rsync (default: False)
+  --jenkins      Jenkins (default: False)
+  --sonarqube    SonarQube (default: False)
+  --query QUERY  Additional query or filter for Shodan (default: )
   --kibana       Kibana (default: False)
 
 Pages:
