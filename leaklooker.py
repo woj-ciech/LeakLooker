@@ -1,12 +1,13 @@
 from hurry.filesize import size
 from colorama import Fore
 import json
-import shodan
 import sys
 import argparse
 from bs4 import BeautifulSoup
+import requests
 
-description = r"""
+
+description = Fore.BLUE + r"""
          ,
          )\
         /  \
@@ -19,12 +20,14 @@ description = r"""
         /  \
        '  ~ '
        ',  ,'
-         `'
-LeakLooker - Find open databases
+         `'""" + Fore.RESET + \
+"""
+LeakLooker - Find open databases - Powered by Binaryedge.io
 https://medium.com/@woj_ciech https://github.com/woj-ciech/
 Example: python leaklooker.py --mongodb --couchdb --kibana --elastic --first 21 --last 37"""
 
 print(description)
+
 
 parser = argparse.ArgumentParser(
     formatter_class=argparse.ArgumentDefaultsHelpFormatter  # added to show default value
@@ -32,229 +35,108 @@ parser = argparse.ArgumentParser(
 
 group = parser.add_argument_group("Pages")
 
-parser.add_argument("--elastic", help="Elasti search", action='store_true')
+parser.add_argument("--elastic", help="Elastic search", action='store_true')
 parser.add_argument("--couchdb", help="CouchDB", action='store_true')
 parser.add_argument("--mongodb", help="MongoDB", action='store_true')
-
-parser.add_argument("--samba", help="Samba", action='store_true')
 parser.add_argument("--gitlab", help="Gitlab", action='store_true')
 parser.add_argument("--rsync", help="Rsync", action='store_true')
 parser.add_argument("--jenkins", help="Jenkins", action='store_true')
 parser.add_argument("--sonarqube", help="SonarQube", action='store_true')
-parser.add_argument("--query", help="Additional query or filter for Shodan", default="")
-
-
+parser.add_argument("--query", help="Additional query or filter for BinaryEdge", default="")
+parser.add_argument("--cassandra", help="Cassandra DB", action='store_true')
+parser.add_argument("--rethink", help="Rethink DB", action='store_true')
+parser.add_argument("--listing", help="Listing directory", action='store_true')
 parser.add_argument('--kibana', help='Kibana', action='store_true')
 group.add_argument('--first', help='First page', default=None, type=int)
 group.add_argument('--last', help='Last page', default=None, type=int)
 
 args = parser.parse_args()
 
-samba = args.samba
 gitlab = args.gitlab
 rsync = args.rsync
 jenkins = args.jenkins
 sonarqube = args.sonarqube
 query = args.query
-
 elastic = args.elastic
 couchdb = args.couchdb
 mongodb = args.mongodb
 kibana = args.kibana
 first = args.first
 last = args.last
+cassandra = args.cassandra
+listing = args.listing
+rethink = args.rethink
+
+arr_query = []
+second_part = ""
+
+if ":" in query:
+    arr_query = query.split(":")
+    second_part = '"' + arr_query[1] + '"'
+
+    query = "%20AND%20" + arr_query[0] +":"+ second_part
+else:
+    query = ""
+
 
 if first and last is None:
-    print("Correct pages")
+    print(description)
+    print(Fore.RED +  "Choose pages to search"+ Fore.RESET)
     sys.exit()
 elif last and first is None:
-    print('Correct pages')
+    print(description)
+    print(Fore.RED +  "Choose pages to search"+ Fore.RESET)
     sys.exit()
 elif first is None and last is None:
-    print("Choose pages to search")
+    print(description)
+    print(Fore.RED +  "Choose pages to search"+ Fore.RESET)
     sys.exit()
 elif first > last:
-    print('Correct pages')
+    print(description)
+    print(Fore.RED +  "Correct pages "+ Fore.RESET)
     sys.exit()
 else:
     last = last + 1
 
-SHODAN_API_KEY = ''
+elastic_query = "type:%22elasticsearch%22"
+mongodb_query = "type:%22mongodb%22"
+couchdb_query = "product:%22couchdb%22"
+rsync_query = "rsync port:%22873%22"
+sonarqube_query = "%22Title: SonarQube%22"
+jenkins_query = "%22Dashboard [Jenkins]%22"
+gitlab_query = "%22Sign in GitLab%22"
+kibana_query = "product:%22kibana%22"
+listing_query = '%22Index of /%22'
+cassandra_query = "type:%22cassandra%22"
+rethink_query = "type:%22rethinkdb%22"
 
-query_elastic = 'product:elastic port:9200 '
-query_mongodb = 'product:MongoDB '
-query_couchdb = "product:couchdb "
-query_kibana = "kibana content-length: 217 "
-query_gitlab = "http.favicon.hash:1278323681"
-query_rsync = "product:rsyncd"
-query_sonarqube = "sonarqube"
-query_jenkins = "jenkins 200 ok"
-query_samba = "product:samba disabled"
+BINARYEDGE_API_KEY = ''
 
 
-def shodan_query(query, page):
+def binaryedge_query(query,page):
+    headers = {'X-Key': BINARYEDGE_API_KEY}
+    end = 'https://api.binaryedge.io/v2/query/search?query='+query+'&page='+str(page)
+    req = requests.get(end,headers=headers)
+    req_json = json.loads(req.content)
+
     try:
-        api = shodan.Shodan(SHODAN_API_KEY)
-        result = api.search(query, page=page)
-    except shodan.APIError as e:
-        print(Fore.RED + e.value + Fore.RESET)
-        return False
+        print("Total results: " + Fore.GREEN + str(req_json['total']) + Fore.RESET)
+    except:
+        print("Error with your query")
+        sys.exit()
 
-    if len(result['matches']) > 0:
-        print('Found ' + str(result['total']) + " results")
-
-    else:
-        print("Nothing was found")
-        return False
-
-    return result
-
-
-def check_samba(results):
-    if results:
-        try:
-            for service in results['matches']:
-                if service['smb']['anonymous'] == True:
-                    print(Fore.LIGHTGREEN_EX + service['ip_str'] + ':' + str(service['port']) + Fore.RESET)
-                    if service['hostnames']:
-                        print("Hostname")
-                        for hostname in service['hostnames']:
-                            print(Fore.LIGHTYELLOW_EX + hostname + Fore.RESET)
-                    try:
-                        print('Country: ' + Fore.LIGHTBLUE_EX + service['location']['country_name'] + Fore.RESET)
-                    except:
-                        print('Country: ' + Fore.RED + 'Unknown' + Fore.RESET)
-
-                    print("Shares")
-                    for share in service['smb']['shares']:
-                        print(Fore.CYAN + share['name'] + " - " + share['comments'] + Fore.RESET)
-                    print("-----------------------------")
-        except Exception as e:
-            pass
-
-
-def check_elastic(results):
-    if results:
-        for service in results['matches']:
-            try:
-                if service['elastic']['cluster']['indices']['store']['size_in_bytes'] > 217000000:
-                    print("IP: http://" + Fore.LIGHTGREEN_EX + service['ip_str'] + ':' + str(
-                        service['port']) + '/_cat/indices?v' + Fore.RESET)
-                    if service['hostnames']:
-                        print("Hostname")
-                        for hostname in service['hostnames']:
-                            print(Fore.LIGHTYELLOW_EX + hostname + Fore.RESET)
-                    print("Size: " + Fore.LIGHTGREEN_EX + size(
-                        service['elastic']['cluster']['indices']['store']['size_in_bytes']) + Fore.RESET)
-                    try:
-                        print('Country: ' + Fore.LIGHTBLUE_EX + service['location']['country_name'] + Fore.RESET)
-                    except:
-                        print('Country: ' + Fore.RED + 'Unknown' + Fore.RESET)
-                    print("Indices: ")
-                    for indice, info in service['elastic']['indices'].items():
-                        print(Fore.GREEN + indice + Fore.RESET)
-                    print("-----------------------------")
-            except KeyError:
-                pass
-
-
-def check_mongodb(results):
-    if results:
-        for service in results['matches']:
-
-            try:
-                if service['mongodb']['listDatabases']['totalSize'] > 217000000:
-                    print("IP: " + Fore.LIGHTBLUE_EX + service['ip_str'] + Fore.RESET)
-                    if service['hostnames']:
-                        print("Hostname")
-                        for hostname in service['hostnames']:
-                            print(Fore.LIGHTYELLOW_EX + hostname + Fore.RESET)
-                    print("Size: " + Fore.LIGHTBLUE_EX + size(
-                        service['mongodb']['listDatabases']['totalSize']) + Fore.RESET)
-                    try:
-                        print('Country: ' + Fore.LIGHTBLUE_EX + service['location']['country_name'] + Fore.RESET)
-                    except:
-                        print('Country: ' + Fore.RED + 'Unknown' + Fore.RESET)
-                    for database in service['mongodb']['listDatabases']['databases']:
-                        if database['empty'] != 'true':
-                            print("Database name: " + Fore.BLUE + database['name'] + Fore.RESET)
-                            print("Size: " + Fore.BLUE + size(database['sizeOnDisk']) + Fore.RESET)
-                            print('Collections: ')
-                            for collection in database['collections']:
-                                print(Fore.LIGHTBLUE_EX + collection + Fore.RESET)
-                    print("-----------------------------")
-            except KeyError:
-                pass
-
-
-def check_couchdb(results):
-    if results:
-        for service in results['matches']:
-            try:
-                data = service['data']
-                if "200 OK" in data:
-                    response = data.splitlines()
-                    for line in response:
-                        if line.startswith("{"):
-                            json_data = json.loads(line)
-                            if len(json_data['dbs']) < 20 and 'compromised' not in service['tags']:
-                                print("IP: http://" + Fore.YELLOW + service['ip_str'] + ':' + str(
-                                    service['port']) + '/_utils' + Fore.RESET)
-                                if service['hostnames']:
-                                    print("Hostname")
-                                    for hostname in service['hostnames']:
-                                        print(Fore.LIGHTYELLOW_EX + hostname + Fore.RESET)
-                                try:
-                                    print('Country: ' + Fore.LIGHTBLUE_EX + service['location'][
-                                        'country_name'] + Fore.RESET)
-                                except:
-                                    print('Country: ' + Fore.RED + 'Unknown' + Fore.RESET)
-                                print("Databases")
-                                for db in json_data['dbs']:
-                                    print(Fore.LIGHTYELLOW_EX + db + Fore.RESET)
-
-                            print("-----------------------------")
-            except KeyError:
-                pass
-
-
-def check_kibana(results):
-    if results:
-        try:
-            for service in results['matches']:
-                if "200 OK" in service['data']:
-                    print("IP: http://" + Fore.CYAN + service['ip_str'] + ':' + str(
-                        service['port']) + '/app/kibana#/discover?_g=()' + Fore.RESET)
-                    if service['hostnames']:
-                        print("Hostname")
-                        for hostname in service['hostnames']:
-                            print(Fore.LIGHTYELLOW_EX + hostname + Fore.RESET)
-                    try:
-                        print('Country: ' + Fore.LIGHTBLUE_EX + service['location']['country_name'] + Fore.RESET)
-                    except:
-                        print('Country: ' + Fore.RED + 'Unknown' + Fore.RESET)
-                        print('---')
-                    print('---')
-        except:
-            pass
-
+    return req_json['events']
 
 def check_jenkins(results):
     if results:
-        for service in results['matches']:
+        for service in results:
+            print('http://'+service['target']['ip'] +":"+str(service['target']['port']))
             executors = set()
             jobs = set()
-            if 'http' in service:
-                print(Fore.LIGHTGREEN_EX + "http://" + service['ip_str'] + ':' + str(service['port']) + Fore.RESET)
-                if service['hostnames']:
-                    print("Hostname")
-                    for hostname in service['hostnames']:
-                        print(Fore.LIGHTYELLOW_EX + hostname + Fore.RESET)
-                try:
-                    print('Country: ' + Fore.LIGHTBLUE_EX + service['location']['country_name'] + Fore.RESET)
-                except:
-                    print('Country: ' + Fore.RED + 'Unknown' + Fore.RESET)
-                soup = BeautifulSoup(service['http']['html'], features="html.parser")
+
+            try:
+                html_code = service['result']['data']['response']['body']
+                soup = BeautifulSoup(html_code, features="html.parser")
                 for project in soup.find_all("a", {"class": "model-link inside"}):
                     if project['href'].startswith("/computer"):
                         splitted = project['href'].split("/")
@@ -271,118 +153,286 @@ def check_jenkins(results):
                 print(Fore.BLUE + "Jobs" + Fore.RESET)
                 for job in jobs:
                     print(Fore.CYAN + job + Fore.RESET)
+            except:
+                print(Fore.RED + "No information"+ Fore.RESET)
             print("-----------------------------")
-
 
 def check_sonarqube(results):
     if results:
-        for service in results['matches']:
-            print(Fore.LIGHTGREEN_EX + "https://" + service['ip_str'] + ':' + str(service['port']) + Fore.RESET)
-            if service['hostnames']:
-                print("Hostname")
-                for hostname in service['hostnames']:
-                    print(Fore.LIGHTYELLOW_EX + hostname + Fore.RESET)
+        for service in results:
+            found = False
+            print('http://'+service['target']['ip'] +":"+str(service['target']['port']))
             try:
-                print('Country: ' + Fore.LIGHTBLUE_EX + service['location']['country_name'] + Fore.RESET)
-            except:
-                print('Country: ' + Fore.RED + 'Unknown' + Fore.RESET)
-            print("-----------------------------")
+                html_code = service['result']['data']['response']['body']
+                if "Welcome to SonarQube Dashboard" in html_code:
+                    soup = BeautifulSoup(html_code, features="html.parser")
+                    for project in soup.find_all("a", href=True):
+                        if "/dashboard/index" in project.attrs['href']:
+                            print(Fore.GREEN + project.contents[0] + Fore.RESET)
+                            found = True
 
-def check_gitlab(results):
-    if results:
-        for service in results['matches']:
-            if 'http' in service:
-                if "register" in service['http']['html']:
-                    print(Fore.LIGHTGREEN_EX + "https://" + service['ip_str'] + ':' + str(service['port']) + Fore.RESET)
-                    if service['hostnames']:
-                        print("Hostname")
-                        for hostname in service['hostnames']:
-                            print(Fore.LIGHTYELLOW_EX + hostname + Fore.RESET)
-                    try:
-                        print('Country: ' + Fore.LIGHTBLUE_EX + service['location']['country_name'] + Fore.RESET)
-                    except:
-                        print('Country: ' + Fore.RED + 'Unknown' + Fore.RESET)
-                    print("-----------------------------")
+                    if not found:
+                        print("Open with no projects")
+
+                elif service['result']['data']['response']['redirects']:
+                    print(Fore.RED + "Authentication" + Fore.RESET)
+                print("---------------------")
+            except:
+                print(Fore.RED + "Can't retrieve details" + Fore.RESET)
+                print("Server status: " + service['result']['data']['state']['state'])
+                print("---------------------")
 
 def check_rsync(results):
     if results:
-        for service in results['matches']:
-            if service['rsync']['authentication'] == False and service['rsync']['modules']:
-                print(Fore.LIGHTGREEN_EX + "rsync://" + service['ip_str'] + ':' + str(service['port']) + Fore.RESET)
-                if service['hostnames']:
-                    print("Hostname")
-                    for hostname in service['hostnames']:
-                        print(Fore.LIGHTYELLOW_EX + hostname + Fore.RESET)
-                try:
-                    print('Country: ' + Fore.LIGHTBLUE_EX + service['location']['country_name'] + Fore.RESET)
-                except:
-                    print('Country: ' + Fore.RED + 'Unknown' + Fore.RESET)
+        for service in results:
+            print('rsync://'+service['target']['ip'])
+            print("Server status: " + service['result']['data']['state']['state'])
+            try:
+                print(Fore.GREEN + service['result']['data']['service']['banner'] + Fore.RESET,)
+            except:
+                print(Fore.RED + 'No information' + Fore.RESET)
+            print("------------------------------")
 
-                modules = [*service['rsync']['modules']]
-                print ("Modules")
-                for module in modules:
-                    print(Fore.LIGHTMAGENTA_EX + module + Fore.RESET)
+def check_gitlab(results):
+    if results:
+        for service in results:
+            print('https://' + service['target']['ip'] + ":" + str(service['target']['port']))
+            html_code = service['result']['data']['response']['body']
+            if "register" in html_code:
+                soup = BeautifulSoup(html_code, features="html.parser")
+                for project in soup.find_all("meta", {'property':"twitter:description"}):
+                    print(Fore.GREEN + project.attrs['content'] + Fore.RESET)
+                print(Fore.GREEN + "Registration is open" + Fore.RESET)
+            else:
+                print(Fore.RED + "Registration is closed. " + Fore.RESET + "Check public repositories. https://" + service['target']['ip'] + ":" + str(service['target']['port']) + "/explore")
+
+            print("-----------------------")
+
+def check_kibana(results):
+    if results:
+        for service in results:
+            print('http://' + service['target']['ip'] + ":" + str(service['target']['port'])+"/app/kibana#/discover?_g=()")
+            print("Server status: " + service['result']['data']['state']['state'])
+            print("-----------------------")
+
+def check_couchdb(results):
+    if results:
+        for service in results:
+            print('https://' + service['target']['ip'] + ":" + str(service['target']['port']) +"/_utils")
+            try:
+                couch_json = json.loads(service['result']['data']['response']['body'])
+                print("Status code: " + str(service['result']['data']['response']['statusCode']))
+                print("Vendor: " + Fore.CYAN + couch_json['vendor']['name'] + Fore.RESET)
+                print('Features:')
+                for i in couch_json['features']:
+                    print(Fore.GREEN + i + Fore.RESET)
+            except Exception as e:
+                if 'state' in service['result']['data']:
+                    print("Server status: " + service['result']['data']['state']['state'])
+                else:
+                    print(Fore.RED + "Cannot retrieve information" + Fore.RESET)
+
+            print("-----------------------------")
+
+def check_mongodb(results):
+    if results:
+        for service in results:
+            print('IP: ' + service['target']['ip'] + ":" + str(service['target']['port']))
+            if not service['result']['error']:
+                try:
+                    if service['result']['data']['listDatabases']['totalSize'] > 217000000:
+                        print("Size: " + Fore.LIGHTBLUE_EX + size(
+                            service['result']['data']['listDatabases']['totalSize']) + Fore.RESET)
+
+                        for database in service['result']['data']['listDatabases']['databases']:
+                            if database['empty'] != 'true':
+                                print("Database name: " + Fore.BLUE + database['name'] + Fore.RESET)
+                                print("Size: " + Fore.BLUE + size(database['sizeOnDisk']) + Fore.RESET)
+                                print('Collections: ')
+                                for collection in database['collections']:
+                                    print(Fore.LIGHTBLUE_EX + collection['name'] + Fore.RESET)
+                        print("-----------------------------")
+                    else:
+                        print("Total size is only " + Fore.RED + str(service['result']['data']['listDatabases']['totalSize']) +Fore.RESET + " which is below default - 217000000")
+                        print("-----------------------------")
+                except:
+                    pass
+            else:
+                print("Error: " + Fore.RED + service['result']['error'][0]['errmsg'] + Fore.RESET)
                 print("-----------------------------")
+
+def check_elastic(results):
+    if results:
+        for service in results:
+            print('http://' + service['target']['ip'] + ":" + str(service['target']['port']) + "/_cat/indices")
+            print("Cluster name: "+ Fore.LIGHTMAGENTA_EX + service['result']['data']['cluster_name'] + Fore.RESET)
+            print("Indices:")
+            try:
+                for indice in service['result']['data']['indices']:
+                    print("Name: " + Fore.GREEN + indice['index_name'] + Fore.RESET)
+                    print("No. of documents: " +Fore.BLUE + str(indice['docs']) + Fore.RESET)
+                    print("Size: " + Fore.LIGHTCYAN_EX + str(size(indice['size_in_bytes'])) + Fore.RESET)
+            except:
+                print("No indices")
+            print("-----------------------------")
+
+def check_listing(results):
+    if results:
+        for service in results:
+            dir = False
+            print('https://' + service['target']['ip'] + ":" + str(service['target']['port']))
+
+            try:
+                print("Product: " + Fore.MAGENTA + service['result']['data']['service']['product'] + Fore.RESET)
+
+                if 'hostname' in service['result']['data']['service']:
+                    print("Hostname: " + Fore.YELLOW + service['result']['data']['service']['hostname'] + Fore.RESET)
+                html_code = service['result']['data']['service']['banner']
+            except KeyError:
+                if 'response' in service['result']['data']:
+                    print("Status code: " + str(service['result']['data']['response']['statusCode']))
+                    html_code = service['result']['data']['response']['body']
+                else:
+                    html_code = ""
+
+
+            soup = BeautifulSoup(html_code, features="html.parser")
+            for project in soup.find_all("a", href=True):
+                try:
+                    if project.contents[0] == "Name" or project.contents[0] == "Last modified" or project.contents[0] == "Size" or project.contents[0] == "Description" or project.contents[0] == "../":
+                        dir = True
+                        pass
+
+                    if dir == True:
+                        if project.contents[0] == "Name" or project.contents[0] == "Last modified" or project.contents[
+                            0] == "Size" or project.contents[0] == "Description" or project.contents[0] == "../":
+                                pass
+                        else:
+                            print(Fore.GREEN + str(project.contents[0]) + Fore.RESET)
+
+                except:
+                    pass
+
+            print("-----------------------------")
+
+def check_cassandra(results):
+    if results:
+        for service in results:
+            print('IP: ' + service['target']['ip'] + ":" + str(service['target']['port']))
+
+            try:
+                print("Cluster name: " + Fore.MAGENTA + service['result']['data']['info'][0]['cluster_name'] + Fore.RESET)
+                print("Datacenter: " + Fore.YELLOW + service['result']['data']['info'][0]['data_center'] + Fore.RESET)
+
+                for keyspace in service['result']['data']['keyspaces']:
+                    if keyspace == 'system' or keyspace =="system_traces" or keyspace == "system_schema" or keyspace=='system_auth' or keyspace=='system_distributed':
+                        pass
+                    else:
+                        print("Keyspace: " + Fore.BLUE + keyspace + Fore.RESET)
+                        print("Tables: ")
+                        for table in service['result']['data']['keyspaces'][keyspace]['tables']:
+                            print(Fore.GREEN + table + Fore.RESET)
+
+                print("-----------------------------")
+
+            except Exception as e:
+                print("-----------------------------")
+                pass
+
+def check_rethinkdb(results):
+    if results:
+        for service in results:
+            print('ReQL: ' + service['target']['ip'] + ":" + str(service['result']['data']['status'][0]['network']['reql_port']))
+            print('HTTP Admin: ' + "http://"+service['target']['ip'] + ":" + str(service['result']['data']['status'][0]['network']['http_admin_port']))
+
+            if 'hostname' in service['result']['data']['status'][0]['network']:
+                print("Hostname: " + Fore.BLUE + service['result']['data']['status'][0]['network']['hostname'] + Fore.RESET)
+
+            print("Version: " + Fore.YELLOW + service['result']['data']['status'][0]['process']['version'] + Fore.RESET)
+            print("Name: " + Fore.MAGENTA +  service['result']['data']['status'][0]['name'] + Fore.RESET)
+
+            for database in service['result']['data']['databases']:
+
+                print("Database: " + Fore.LIGHTCYAN_EX +  database + Fore.RESET)
+                print("Tables: ")
+                for table in service['result']['data']['databases'][database]['tables']:
+                    print(Fore.GREEN + table + Fore.RESET)
+
+            print("-----------------------------")
 
 if rsync:
     for page in range(first,last):
         print(Fore.RED + '----------------------------------Rsync - Page ' + str(
             page) + '--------------------------------' + Fore.RESET)
-        rsync_results = shodan_query(query_rsync + " " + query,page)
+        rsync_results = binaryedge_query(rsync_query + " " + query,page)
         check_rsync(rsync_results)
 
 if gitlab:
     for page in range(first,last):
         print(Fore.RED + '----------------------------------GitLab - Page ' + str(
             page) + '--------------------------------' + Fore.RESET)
-        gitlab_results = shodan_query(query_gitlab+ " " + query,page)
+        gitlab_results = binaryedge_query(gitlab_query+ " " + query,page)
         check_gitlab(gitlab_results)
 
 if sonarqube:
     for page in range(first, last):
         print(Fore.RED + '----------------------------------SonarQube - Page ' + str(
             page) + '--------------------------------' + Fore.RESET)
-        sonarqube_results = shodan_query(query_sonarqube+ " " + query, page)
+        sonarqube_results = binaryedge_query(sonarqube_query+ " " + query, page)
         check_sonarqube(sonarqube_results)
 
 if jenkins:
     for page in range(first, last):
         print(Fore.RED + '----------------------------------Jenkins - Page ' + str(
             page) + '--------------------------------' + Fore.RESET)
-        jenkins_results = shodan_query(query_jenkins+ " " + query, page)
+        jenkins_results = binaryedge_query(jenkins_query+ " " + query, page)
         check_jenkins(jenkins_results)
-
-if samba:
-    for page in range(first, last):
-        print(Fore.RED + '----------------------------------Samba - Page ' + str(
-            page) + '--------------------------------' + Fore.RESET)
-        samba_results = shodan_query(query_samba+ " " + query, page)
-        check_samba(samba_results)
 
 if elastic:
     for page in range(first, last):
         print(Fore.RED + '----------------------------------Elastic - Page ' + str(
             page) + '--------------------------------' + Fore.RESET)
-        elastic_results = shodan_query(query_elastic+ " " + query, page)
+        elastic_results = binaryedge_query(elastic_query+ " " + query, page)
         check_elastic(elastic_results)
 
 if couchdb:
     for page in range(first, last):
         print(Fore.RED + '----------------------------------CouchDB - Page ' + str(
             page) + '--------------------------------' + Fore.RESET)
-        couchdb_results = shodan_query(query_couchdb+ " " + query, page)
+        couchdb_results = binaryedge_query(couchdb_query+ " " + query, page)
         check_couchdb(couchdb_results)
 
 if mongodb:
     for page in range(first, last):
         print(Fore.RED + '----------------------------------MongoDB - Page ' + str(
             page) + '--------------------------------' + Fore.RESET)
-        mongodb_results = shodan_query(query_mongodb+ " " + query, page)
+        mongodb_results = binaryedge_query(mongodb_query+ " " + query, page)
         check_mongodb(mongodb_results)
 
 if kibana:
     for page in range(first, last):
         print(Fore.RED + '----------------------------------Kibana - Page ' + str(
             page) + '--------------------------------' + Fore.RESET)
-        kibana_results = shodan_query(query_kibana+ " " + query, page)
+        kibana_results = binaryedge_query(kibana_query+ " " + query, page)
         check_kibana(kibana_results)
+
+if listing:
+    for page in range(first,last):
+        print(Fore.RED + '----------------------------------Listing directory - Page ' + str(
+            page) + '--------------------------------' + Fore.RESET)
+        listing_results = binaryedge_query(listing_query + " " + query,page)
+        check_listing(listing_results)
+
+if cassandra:
+    for page in range(first,last):
+        print(Fore.RED + '----------------------------------Cassandra - Page ' + str(
+            page) + '--------------------------------' + Fore.RESET)
+        cassandra_results = binaryedge_query(cassandra_query + " " + query,page)
+        check_cassandra(cassandra_results)
+
+if rethink:
+    for page in range(first,last):
+        print(Fore.RED + '----------------------------------Rethink DB - Page ' + str(
+            page) + '--------------------------------' + Fore.RESET)
+        rethink_results = binaryedge_query(rethink_query + " " + query,page)
+        check_rethinkdb(rethink_results)
