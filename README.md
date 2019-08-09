@@ -124,7 +124,7 @@ Product: Apache httpd
 [REDACTED]/
 [REDACTED]..>
 [REDACTED]/
-----------------------------------Rethink DB - Page 1--------------------------------
+----------------------------------Rethink DB - Page 21--------------------------------
 ReQL: [REDACTED]:28015
 HTTP Admin: http://[REDACTED]:8080
 Hostname: [REDACTED]
