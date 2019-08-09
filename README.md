@@ -16,6 +16,10 @@ New version supports:
 
 and custom query.
 
+Queries:
+
+https://docs.binaryedge.io/api-v2/
+
 Background:
 
 v1: https://medium.com/@woj_ciech/leaklooker-find-open-databases-in-a-second-9da4249c8472
