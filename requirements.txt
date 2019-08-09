@@ -2,5 +2,4 @@ beautifulsoup4==4.7.1
 colorama==0.4.1
 hurry.filesize==0.9
 requests==2.22.0
-shodan==1.13.0
 urllib3==1.25.2
