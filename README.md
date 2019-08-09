@@ -1,32 +1,33 @@
-# LeakLooker
-Find open databases with Shodan
+# LeakLooker - Powered by Binaryedge.io
+Find open databases/services
 
 New version supports:
 - Elasticsearch
 - CouchDB
 - MongoDB
-- SMB
 - Gitlab
 - Rsync
 - Jenkins
 - Sonarqube
 - Kibana
+- CassandraDB
+- RethinkDB
+- Directory listing
 
 and custom query.
 
 Background:
 
-https://medium.com/@woj_ciech/leaklooker-find-open-databases-in-a-second-9da4249c8472
+v1: https://medium.com/@woj_ciech/leaklooker-find-open-databases-in-a-second-9da4249c8472
 
-V2 - https://medium.com/@woj_ciech/leaklooker-v2-find-more-open-servers-and-source-code-leaks-25e671700e41
+v2: https://medium.com/hackernoon/leaklooker-v2-find-more-open-servers-and-source-code-leaks-25e671700e41
 
 ## Requirements:
-Python 3
-Shodan paid plan, except Kibana search
+Python 3 &
+Binaryedge API
 
-***Put your Shodan API key ina line 82***
+***Paste your BinaryEdge API key in line 113***
 ```
-pip3 install shodan
 pip3 install colorama
 pip3 install hurry.filesize
 pip3 install beautifulsoup4
@@ -53,126 +54,168 @@ pip install -r requirements.txt
        '  ~ '
        ',  ,'
          `'
-LeakLooker - Find open databases
+LeakLooker - Find open databases - Powered by Binaryedge.io
 https://medium.com/@woj_ciech https://github.com/woj-ciech/
 Example: python leaklooker.py --mongodb --couchdb --kibana --elastic --first 21 --last 37
-usage: leaklooker.py [-h] [--elastic] [--couchdb] [--mongodb] [--samba]
-                     [--gitlab] [--rsync] [--jenkins] [--sonarqube]
-                     [--query QUERY] [--kibana] [--first FIRST] [--last LAST]
+usage: leaklooker.py [-h] [--elastic] [--couchdb] [--mongodb] [--gitlab]
+                     [--rsync] [--jenkins] [--sonarqube] [--query QUERY]
+                     [--cassandra] [--rethink] [--listing] [--kibana]
+                     [--first FIRST] [--last LAST]
 
 optional arguments:
   -h, --help     show this help message and exit
-  --elastic      Elasti search (default: False)
+  --elastic      Elastic search (default: False)
   --couchdb      CouchDB (default: False)
   --mongodb      MongoDB (default: False)
-  --samba        Samba (default: False)
   --gitlab       Gitlab (default: False)
   --rsync        Rsync (default: False)
   --jenkins      Jenkins (default: False)
   --sonarqube    SonarQube (default: False)
-  --query QUERY  Additional query or filter for Shodan (default: )
+  --query QUERY  Additional query or filter for BinaryEdge (default: )
+  --cassandra    Cassandra DB (default: False)
+  --rethink      Rethink DB (default: False)
+  --listing      Listing directory (default: False)
   --kibana       Kibana (default: False)
 
 Pages:
   --first FIRST  First page (default: None)
   --last LAST    Last page (default: None)
+
 ```
 
 ***You need to specify first and last page***
 
 ## Example
+
+### Search for RethinkDB and listing directory in pages from 21 to 37
 ```
-root@kali:~/# python leaklooker.py --mongodb --couchdb --kibana --elastic --first 12 --last 14
-[...]
-----------------------------------Elastic - Page 12--------------------------------
-Found 25069 results
-IP: http://xxx.xxx.xxx.xxx:9200/_cat/indices?v
-Size: 1G
-Country: France
-Indices: 
-.monitoring-kibana-6-2019.01.08
-[...]
-----------------------------
-IP: http://yyy.yyy.yyy.yyy:9200/_cat/indices?v
-Size: 144G
-Country: China
-Indices: 
-zhuanli
-hx_person
-[...]
-----------------------------------CouchDB - Page 12--------------------------------
-Found 5932 results
+root@kali:~/PycharmProjects/LeakLooker# python leaklooker.py --rethink --listing --first 21 --last 37
+----------------------------------Listing directory - Page 21--------------------------------
+https://[REDACTED]:6666
+Product: Apache httpd
+Hostname: localhost
+[REDACTED]/
+[REDACTED]/
+[REDACTED]/
+[REDACTED]/
+[REDACTED]/
 -----------------------------
-IP: http://xxx.xxx.xxx:5984/_utils
-Country: Austria
-new_fron_db
-test_db
+https://[REDACTED]:6666
+Product: MiniServ
 -----------------------------
-IP: http://yyy.yyy.yyy.yyy:5984/_utils
-Country: United States
-_replicator
-_users
-backup_20180917
-backup_db
-eio_local
-tfa_pos
-----------------------------------MongoDB - Page 12--------------------------------
-Found 66680 results
-IP: xxx.xxx.xxx.xxx
-Size: 6G
-Country: France
-Database name: Warn
-Size: 80M
-Collections: 
-Warn
-system.indexes
-Database name: xhprofprod
-Size: 5G
-Collections: 
-results
-system.indexes
+https://[REDACTED]:6666
+Product: Apache httpd
+[REDACTED]/
+[REDACTED]/
+[REDACTED].html
+[REDACTED]/
+[REDACTED].css
+[REDACTED]/
+[REDACTED]/
+[REDACTED]/
+favicon.ico
 -----------------------------
-IP: yyy.yyy.yyy.yyy
-Size: 544M
-Country: Ukraine
-Database name: local
-Size: 32M
-Collections: 
-startup_log
-Database name: ace_stat
-Size: 256M
-Collections: 
-stat_minute
-system.indexes
-stat_hourly
-stat_daily
-[...]
-Database name: ace
-Size: 256M
-Collections: 
-usergroup
-system.indexes
-scheduletask
-dpigroup
-portforward
-wlangroup
-[...]
-----------------------------------Kibana - Page 12--------------------------------
-Found 10464 results
-IP: http://xxx.xxx.xxx.xxx:5601/app/kibana#/discover?_g=()
-Country: Germany
----
-IP: http://yyy.yyy.yyy.yyy:5601/app/kibana#/discover?_g=()
-Country: United States
----
-IP: http://zzz.zzz.zzz.zzz:5601/app/kibana#/discover?_g=()
-Country: United Kingdom
+https://[REDACTED]:6666
+Product: Apache httpd
+[REDACTED]/
+[REDACTED]/
+[REDACTED]/
+[REDACTED]..>
+[REDACTED]/
+[REDACTED]..>
+[REDACTED]/
+----------------------------------Rethink DB - Page 1--------------------------------
+ReQL: [REDACTED]:28015
+HTTP Admin: http://[REDACTED]:8080
+Hostname: [REDACTED]
+Version: rethinkdb 2.3.6~0trusty (GCC 4.8.2)
+Name: [REDACTED]
+Database: [REDACTED]
+Tables: 
+Database: rethinkdb
+Tables: 
+cluster_config
+current_issues
+db_config
+jobs
+logs
+permissions
+server_config
+server_status
+stats
+table_config
+table_status
+users
+Database: [REDACTED]
+Tables: 
+-----------------------------
+ReQL: [REDACTED]:28015
+HTTP Admin: http://[REDACTED]:8080
+Hostname: [REDACTED]
+Version: rethinkdb 2.3.6~0jessie (GCC 4.9.2)
+Name: [REDACTED]
+Database: [REDACTED]
+Tables: 
+Database: rethinkdb
+Tables: 
+cluster_config
+current_issues
+db_config
+jobs
+logs
+permissions
+server_config
+server_status
+stats
+table_config
+table_status
+users
+Database: settings
+Tables: 
+-----------------------------
+
 ```
 
-## Screenshots
-![](https://cdn-images-1.medium.com/max/800/1*Fj8DRqY9bpDmftuPK9clUA.png)
-
-![](https://cdn-images-1.medium.com/max/600/1*-s4pZpMIU4ZbdRjuBVxRYg.png)
-
+### Search for Jenkins, Gitlab in Uruguay (Country code is UY) on pages from 1 to 2
+```
+root@kali:~/PycharmProjects/LeakLooker# python leaklooker.py --jenkins --gitlab --first 1 --last 2 --query "country:UY"
+----------------------------------GitLab - Page 1--------------------------------
+Total results: 13
+https://[REDACTED]:443
+GitLab Community Edition
+Registration is open
+-----------------------
+https://[REDACTED]:443
+Registration is closed. Check public repositories. https://164.73.232.10:443/explore
+-----------------------
+https://[REDACTED]:443
+Registration is closed. Check public repositories. https://190.64.138.5:443/explore
+-----------------------
+https://[REDACTED]:443
+GitLab Community Edition
+Registration is open
+[...]
+----------------------------------Jenkins - Page 1--------------------------------
+Total results: 6501
+http://[REDACTED]:443
+Executors
+Windows
+(master)
+Jobs
+-----------------------------
+http://[REDACTED]:443
+Executors
+Jobs
+-----------------------------
+http://[REDACTED]:443
+Executors
+Jobs
+[REDACTED]
+[REDACTED]
+```
+### Search for mongoDB and Elasticsearch with keyword "medical" only on first page
+```
+root@kali:~/PycharmProjects/LeakLooker# python leaklooker.py --mongo --elastic --first 1 --last 1 --query "medical"
+```
 ## Additional
 Tool has been made for educational purposes only. I'm not responsible for any damage caused. Don't be evil.
