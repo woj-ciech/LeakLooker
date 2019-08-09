@@ -26,6 +26,8 @@ v1: https://medium.com/@woj_ciech/leaklooker-find-open-databases-in-a-second-9da
 
 v2: https://medium.com/hackernoon/leaklooker-v2-find-more-open-servers-and-source-code-leaks-25e671700e41
 
+v3: https://medium.com/@woj_ciech/leaklooker-part-3-dna-samples-internal-files-and-more-967e794fa031
+
 ## Requirements:
 Python 3 &
 Binaryedge API
