@@ -13,6 +13,7 @@ New version supports:
 - CassandraDB
 - RethinkDB
 - Directory listing
+- Amazon S3
 
 and custom query.
 
@@ -37,6 +38,7 @@ Binaryedge API
 pip3 install colorama
 pip3 install hurry.filesize
 pip3 install beautifulsoup4
+pip3 install pybinaryedge
 ```
 
 ```
@@ -66,7 +68,8 @@ Example: python leaklooker.py --mongodb --couchdb --kibana --elastic --first 21 
 usage: leaklooker.py [-h] [--elastic] [--couchdb] [--mongodb] [--gitlab]
                      [--rsync] [--jenkins] [--sonarqube] [--query QUERY]
                      [--cassandra] [--rethink] [--listing] [--kibana]
-                     [--first FIRST] [--last LAST]
+                     [--s3asia] [--s3usa] [--s3europe] [--first FIRST]
+                     [--last LAST]
 
 optional arguments:
   -h, --help     show this help message and exit
@@ -82,6 +85,9 @@ optional arguments:
   --rethink      Rethink DB (default: False)
   --listing      Listing directory (default: False)
   --kibana       Kibana (default: False)
+  --s3asia       Amazon s3 s3.ap-southeast-1 (default: False)
+  --s3usa        Amazon s3 s3.ap-southeast-1 (default: False)
+  --s3europe     Amazon s3 s3.ap-southeast-1 (default: False)
 
 Pages:
   --first FIRST  First page (default: None)
@@ -221,7 +227,7 @@ Jobs
 ```
 ### Search for mongoDB and Elasticsearch with keyword "medical" only on first page
 ```
-root@kali:~/PycharmProjects/LeakLooker# python leaklooker.py --mongo --elastic --first 1 --last 1 --query "medical"
+root@kali:~/PycharmProjects/LeakLooker# python leaklooker.py --mongo --elastic --first 1 --last 2 --query "medical"
 ```
 ## Additional
 Tool has been made for educational purposes only. I'm not responsible for any damage caused. Don't be evil.

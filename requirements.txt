@@ -3,3 +3,4 @@ colorama==0.4.1
 hurry.filesize==0.9
 requests==2.22.0
 urllib3==1.25.2
+pybinaryedge
