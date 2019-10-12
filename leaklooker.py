@@ -5,6 +5,10 @@ import sys
 import argparse
 from bs4 import BeautifulSoup
 import requests
+from pybinaryedge import BinaryEdge
+from urllib.parse import urlparse
+
+
 
 
 description = Fore.BLUE + r"""
@@ -47,6 +51,10 @@ parser.add_argument("--cassandra", help="Cassandra DB", action='store_true')
 parser.add_argument("--rethink", help="Rethink DB", action='store_true')
 parser.add_argument("--listing", help="Listing directory", action='store_true')
 parser.add_argument('--kibana', help='Kibana', action='store_true')
+parser.add_argument("--s3asia", help="Amazon s3 s3.ap-southeast-1", action="store_true")
+parser.add_argument("--s3usa", help="Amazon s3 s3.ap-southeast-1", action="store_true")
+parser.add_argument("--s3europe", help="Amazon s3 s3.ap-southeast-1", action="store_true")
+
 group.add_argument('--first', help='First page', default=None, type=int)
 group.add_argument('--last', help='Last page', default=None, type=int)
 
@@ -66,6 +74,9 @@ last = args.last
 cassandra = args.cassandra
 listing = args.listing
 rethink = args.rethink
+s3asia = args.s3asia
+s3usa = args.s3usa
+s3europe = args.s3europe
 
 arr_query = []
 second_part = ""
@@ -111,6 +122,122 @@ cassandra_query = "type:%22cassandra%22"
 rethink_query = "type:%22rethinkdb%22"
 
 BINARYEDGE_API_KEY = ''
+be = BinaryEdge(BINARYEDGE_API_KEY)
+
+buckets = set()
+def parse_bucket(bucket):
+    parsed = urlparse(bucket)
+    path = parsed.path.split('/')
+
+
+
+    try:
+        if parsed.netloc.startswith("s3"):
+            if len(path) > 1:
+                if path[1] not in buckets:
+                    print("https://" + parsed.netloc + "/" + path[1])
+                    amazon_req = requests.get("https://" + parsed.netloc + "/" + path[1], timeout=10)
+                    if amazon_req.status_code == 200:
+                        print("Status: " + Fore.GREEN + str(amazon_req.status_code) + Fore.RESET)
+                    elif amazon_req.status_code == 404:
+                        print("Status: " + Fore.GREEN + str(amazon_req.status_code) + Fore.RESET)
+                    else:
+                        print("Status: " + Fore.RED + str(amazon_req.status_code) + Fore.RESET)
+                    buckets.add(path[1])
+        elif parsed.netloc == "":
+            parsed_netloc = parsed.path.split("/")
+            if parsed_netloc[3] not in buckets:
+                print("https://" + parsed_netloc[2] + "/" + parsed_netloc[3])
+                amazon_req = requests.get("https://" + parsed_netloc[2] + "/" + parsed_netloc[3], timeout=10)
+                if amazon_req.status_code == 200:
+                    print("Status: " + Fore.GREEN + str(amazon_req.status_code) + Fore.RESET)
+                elif amazon_req.status_code == 404:
+                    print("Status: " + Fore.GREEN + str(amazon_req.status_code) + Fore.RESET)
+                else:
+                    print("Status: " + Fore.RED + str(amazon_req.status_code) + Fore.RESET)
+                buckets.add(parsed_netloc[3])
+        else:
+            if parsed.netloc not in buckets:
+                print("https://" + parsed.netloc)
+                amazon_req = requests.get("https://" + parsed.netloc)
+                if amazon_req.status_code == 200:
+                    print("Status: " + Fore.GREEN + str(amazon_req.status_code) + Fore.RESET)
+                elif amazon_req.status_code == 404:
+                    print("Status: " + Fore.GREEN + str(amazon_req.status_code) + Fore.RESET)
+                else:
+                    print("Status: " + Fore.RED + str(amazon_req.status_code) + Fore.RESET)
+                buckets.add(parsed.netloc)
+    except:
+        pass
+
+
+def check_amazons3(results):
+    for ip in results['events']:
+        print(Fore.MAGENTA + str(ip['target']['ip']) + Fore.RESET)
+        print(Fore.BLUE + "https://app.binaryedge.io/services/query/"+str(ip['target']['ip']) + Fore.RESET)
+
+        splitted = ip['result']['data']['service']['banner'].split("\\r\\n")
+
+        for header in splitted:
+            if 'amazon' in header:
+                splitted_header = header.split(" ")
+                for i in splitted_header:
+                    if "amazonaws.com" in i:
+                        parsed = urlparse(i)
+                        path = parsed.path.split('/')
+                        try:
+
+                            if parsed.netloc.startswith("s3"):
+                                if len(path) > 1:
+                                    if path[1] not in buckets:
+                                        print("https://" + parsed.netloc + "/" + path[1])
+                                        amazon_req = requests.get("https://" + parsed.netloc + "/" + path[1],
+                                                                  timeout=10)
+                                        print(amazon_req.status_code)
+                                        if amazon_req.status_code == 200:
+                                            print("Status: " + Fore.GREEN + str(amazon_req.status_code) + Fore.RESET)
+                                        elif amazon_req.status_code == 404:
+                                            print("Status: " + Fore.GREEN + str(amazon_req.status_code) + Fore.RESET)
+                                        else:
+                                            print("Status: " + Fore.RED + str(amazon_req.status_code) + Fore.RESET)
+                                        buckets.add(path[1])
+                            else:
+                                if parsed.netloc not in buckets:
+                                    print("https://" + parsed.netloc)
+                                    amazon_req = requests.get("https://" + parsed.netloc)
+                                    print(amazon_req.status_code)
+                                    if amazon_req.status_code == 200:
+                                        print("Status: " + Fore.GREEN + str(amazon_req.status_code) + Fore.RESET)
+                                    elif amazon_req.status_code == 404:
+                                        print("Status: " + Fore.GREEN + str(amazon_req.status_code) + Fore.RESET)
+                                    else:
+                                        print("Status: " + Fore.RED + str(amazon_req.status_code) + Fore.RESET)
+                                    buckets.add(parsed.netloc)
+                        except:
+                            pass
+            if header == "" or "\\n" in header:
+                break
+
+        soup = BeautifulSoup(ip['result']['data']['service']['banner'],"html.parser")
+
+        for a in soup.find_all(href=True):
+            if "amazonaws.com" in a['href']:
+                parse_bucket(a['href'])
+
+        for a in soup.find_all("script", {"src":True}):
+            if "amazonaws.com" in a['src']:
+                parse_bucket(a['src'])
+
+        for a in soup.find_all("img", {"src":True}):
+            if "amazonaws.com" in a['src']:
+                parse_bucket(a['src'])
+
+        title = soup.find("meta", property="og:image")
+        if title:
+            if "amazonaws.com" in title['content']:
+                parse_bucket(title['content'])
+
+        print("----------------------------------")
 
 
 def binaryedge_query(query,page):
@@ -240,7 +367,7 @@ def check_mongodb(results):
             print('IP: ' + service['target']['ip'] + ":" + str(service['target']['port']))
             if not service['result']['error']:
                 try:
-                    if service['result']['data']['listDatabases']['totalSize'] > 217000000:
+                    if service['result']['data']['listDatabases']['totalSize'] > 25000000000:
                         print("Size: " + Fore.LIGHTBLUE_EX + size(
                             service['result']['data']['listDatabases']['totalSize']) + Fore.RESET)
 
@@ -258,7 +385,7 @@ def check_mongodb(results):
                 except:
                     pass
             else:
-                print("Error: " + Fore.RED + service['result']['error'][0]['errmsg'] + Fore.RESET)
+                # print("Error: " + Fore.RED + service['result']['error'][0]['errmsg'] + Fore.RESET)
                 print("-----------------------------")
 
 def check_elastic(results):
@@ -267,11 +394,13 @@ def check_elastic(results):
             print('http://' + service['target']['ip'] + ":" + str(service['target']['port']) + "/_cat/indices")
             print("Cluster name: "+ Fore.LIGHTMAGENTA_EX + service['result']['data']['cluster_name'] + Fore.RESET)
             print("Indices:")
+
             try:
                 for indice in service['result']['data']['indices']:
-                    print("Name: " + Fore.GREEN + indice['index_name'] + Fore.RESET)
-                    print("No. of documents: " +Fore.BLUE + str(indice['docs']) + Fore.RESET)
-                    print("Size: " + Fore.LIGHTCYAN_EX + str(size(indice['size_in_bytes'])) + Fore.RESET)
+                	if indice['size_in_bytes'] > 10000000000:
+	                    print("Name: " + Fore.GREEN + indice['index_name'] + Fore.RESET)
+	                    print("No. of documents: " +Fore.BLUE + str(indice['docs']) + Fore.RESET)
+	                    print("Size: " + Fore.LIGHTCYAN_EX + str(size(indice['size_in_bytes'])) + Fore.RESET)
             except:
                 print("No indices")
             print("-----------------------------")
@@ -436,3 +565,28 @@ if rethink:
             page) + '--------------------------------' + Fore.RESET)
         rethink_results = binaryedge_query(rethink_query + " " + query,page)
         check_rethinkdb(rethink_results)
+
+if s3asia:
+    search = '"s3.ap-southeast-1.amazonaws.com"'+ " " + query+' tag:"WEBSERVER"'
+    for page in range(first,last):
+        print(Fore.RED + '----------------------------------s3.ap-southeast-1.amazonaws.com - Page ' + str(
+            page) + '--------------------------------' + Fore.RESET)
+        results = be.host_search(search,page)
+        check_amazons3(results)
+
+if s3usa:
+    search = '"s3-us-west-2.amazonaws.com"'+ " " + query+' tag:"WEBSERVER"'
+    for page in range(first,last):
+        print(Fore.RED + '----------------------------------s3.ap-southeast-1.amazonaws.com - Page ' + str(
+            page) + '--------------------------------' + Fore.RESET)
+        results = be.host_search(search,page)
+        check_amazons3(results)
+
+if s3europe:
+    search = '"s3-eu-west-1.amazonaws.com"'+ " " + query+' tag:"WEBSERVER"'
+    for page in range(first,last):
+        print(Fore.RED + '----------------------------------s3.ap-southeast-1.amazonaws.com - Page ' + str(
+            page) + '--------------------------------' + Fore.RESET)
+        results = be.host_search(search,page)
+        check_amazons3(results)
+
