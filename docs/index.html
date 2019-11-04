@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+{% block page_content %}
+    <head>        
+        <!-- META SECTION -->
+        <title>ꓘamerka</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <!-- END META SECTION -->
+        
+        <!-- CSS INCLUDE -->
+        <script src="static/js/d3.js"></script>
+        <script src="static/js/d3.layout.cloud.js" charset="UTF-8"></script>
+        <script src="static/js/d3.wordcloud.js" charset="UTF-8"></script>
+        <link rel="stylesheet" type="text/css" id="theme" href="static/css/theme-default.css"/>
+        <!-- EOF CSS INCLUDE -->
+    </head>
+    <body>
+        <!-- START PAGE CONTAINER -->
+        <div class="page-container">
+            
+            <!-- START PAGE SIDEBAR -->
+            <div class="page-sidebar">
+                <!-- START X-NAVIGATION -->
+                <ul class="x-navigation">
+                    <li class="xn-logo">
+                        <a href="/">ꓘamerka</a>
+                        <a href="#" class="x-navigation-control"></a>
+                    </li>
+                    <li class="xn-profile">
+
+                        <div class="profile">
+                            <div class="profile-image">
+                            </div>
+                            <div class="profile-data">
+                                 <p><h3 style="color:white;">Wojciech <br><a href="https://github.com/woj-ciech">Github</a> <br> <a href="https://twitter.com/@the_wojciech">Twitter</a></h3> </p>
+                            </div>
+
+                        </div>
+                    </li>
+                    <li class="xn-title">Navigation</li>
+                    <li class="">
+                        <a href="index"><span class="fa fa-desktop"></span> <span class="xn-text">Dashboard</span></a>
+                    </li>
+                    <li class="">
+                        <a href="history"><span class="fa fa-files-o"></span> <span class="xn-text">History</span></a>
+                    </li>
+                    <li class="">
+                        <a href="map"><span class="fa fa-map-marker"></span> <span class="xn-text">Map</span></a>
+                    </li>
+                    <li class="">
+                        <a href="devices"><span class="fa fa-search"></span> <span class="xn-text">Search</span></a>
+                    </li>
+
+                    <li class="xn-title">Other</li>
+
+                    <li>
+                        <a href="sources"><span class="fa fa-book"></span> <span class="xn-text">Useful links</span></a>
+                    </li>                    
+
+                    
+                </ul>
+                <!-- END X-NAVIGATION -->
+            </div>
+            <!-- END PAGE SIDEBAR -->
+            
+            <!-- PAGE CONTENT -->
+            <div class="page-content">
+                
+                <!-- START X-NAVIGATION VERTICAL -->
+                <ul class="x-navigation x-navigation-horizontal x-navigation-panel">
+
+                </ul>
+                <!-- END X-NAVIGATION VERTICAL -->                     
+
+                <!-- START BREADCRUMB -->
+                <ul class="breadcrumb">
+
+                           <div class='progress-wrapper'>
+                <div id='progress-bar' class='progress-bar' style="background-color: #68a9ef; width: 0%;">&nbsp;</div>
+                </div>
+                <div id="progress-bar-message">Starting...</div>
+                </ul>
+                <!-- END BREADCRUMB -->                       
+                
+                <!-- PAGE CONTENT WRAPPER -->
+                <div class="page-content-wrap">
+                    
+                    <!-- START WIDGETS -->                    
+                    <div class="row">
+                        <div class="col-md-3">
+                            
+                            <!-- START WIDGET SLIDER -->
+                            <div class="widget widget-default widget-carousel">
+                                <div class="owl-carousel" id="owl-example">
+                                    <div>
+                                        <div class="widget-title">Shodan credits</div>
+                                        <div class="widget-int"> 100</div>
+                                    </div>
+                                    <div>
+                                        <div class="widget-title">BinaryEdge credits</div>
+                                        <div class="widget-int">4000</div>
+                                    </div>
+                                </div>
+                                <div class="widget-controls">
+                                    <a href="#" class="widget-control-right widget-remove" data-toggle="tooltip" data-placement="top" title="Remove Widget"><span class="fa fa-times"></span></a>
+                                </div>
+                            </div>
+                            <!-- END WIDGET SLIDER -->
+
+                        </div>
+                        <div class="col-md-3">
+
+                            <!-- START WIDGET MESSAGES -->
+                            <div class="widget widget-default widget-item-icon">
+                                <div class="widget-item-left">
+                                    <span class="glyphicon glyphicon-eye-open"></span>
+                                </div>
+                                <div class="widget-data">
+                                    <div class="widget-int num-count">2137</div>
+                                    <div class="widget-title">Devices</div>
+                                </div>
+                                <div class="widget-controls">
+                                    <a href="#" class="widget-control-right widget-remove" data-toggle="tooltip" data-placement="top" title="Remove Widget"><span class="fa fa-times"></span></a>
+                                </div>
+                            </div>
+                            <!-- END WIDGET MESSAGES -->
+
+                        </div>
+                        <div class="col-md-3">
+
+                            <div class="widget widget-default widget-item-icon">
+                                <div class="widget-item-left">
+                                    <span class="fa fa-search"></span>
+                                </div>
+                                <div class="widget-data">
+                                    <div class="widget-int num-count">14</div>
+                                    <div class="widget-title">Searches</div>
+                                </div>
+                                <div class="widget-controls">
+                                    <a href="#" class="widget-control-right widget-remove" data-toggle="tooltip" data-placement="top" title="Remove Widget"><span class="fa fa-times"></span></a>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="col-md-3">
+
+                            <!-- START WIDGET CLOCK -->
+                            <div class="widget widget-info widget-padding-sm">
+                                <br>
+                                <div class="widget-big-int plugin-clock">00:00</div>
+                                <div class="widget-subtitle plugin-date">Loading...</div>
+                                <div class="widget-controls">
+                                    <a href="#" class="widget-control-right widget-remove" data-toggle="tooltip" data-placement="left" title="Remove Widget"><span class="fa fa-times"></span></a>
+                                </div>
+
+                            </div>
+                            <!-- END WIDGET CLOCK -->
+
+                        </div>
+                    </div>
+                    <!-- END WIDGETS -->
+                    <div class="row">
+                            <div class="col-md-4">
+
+                                <div class="panel panel-default">
+                                    <div class="panel-heading">
+                                        <div class="panel-title-box">
+                                            <h3>Ports </h3>
+                                        </div>
+
+                                    </div>
+                                    <div class="panel-body padding-0" >
+                                        <div class="chart-holder" id="dashboard-bar-1" style="height: 200px;"></div>
+
+                                </div>
+
+
+
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <div class="panel-title-box">
+                                        <h3>Categories</h3>
+                                    </div>
+
+                                </div>
+                                <div class="panel-body padding-0">
+                                    <div class="chart-holder" id="dashboard-donut-1" style="height: 200px;"></div>
+                                </div>
+                            </div>
+
+                        </div>
+
+
+						<div class="col-md-4">
+
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <div class="panel-title-box">
+                                        <h3>Searches</h3>
+                                        <span>5 last searches</span>
+                                    </div>
+
+                                </div>
+                                <div class="panel-body panel-body-table">
+
+                                    <div class="table-responsive">
+                                        <table class="table">
+
+                                            <tbody>
+                                                <tr>{% for object in search %}
+
+                                                        <td><strong><a href="{% url 'results' id=object.id %}">{{object.country}} {{object.coordinates }} - {% for a in object.ics %} {{ a }} {% endfor %} {% for b in object.coordinates_search %} {{ b}} {% endfor %}</strong></td>
+                                                </a>
+                                                </tr>
+
+                                                {% endfor %}
+
+
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="row">
+						<div class="col-md-8">
+
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <div class="panel-title-box">
+                                        <h3>World coverage</h3>
+                                    </div>
+
+
+                                </div>
+                                <div class="panel-body">
+
+                                            <div id="dashboard-map-seles" style="width: 100%; height: 200px"></div>
+                                </div>
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-md-4">
+
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <div class="panel-title-box">
+                                        <h3>Vulnerabilities</h3>
+                                    </div>
+
+                                </div>
+                                <div class="panel-body padding-0">
+                                    <div id="wordcloud" class="chart-holder" id="dashboard-line-1" style="height:200px;overflow:hidden"></div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- START DASHBOARD CHART -->
+					<div class="block-full-width">
+
+                    </div>
+                    <!-- END DASHBOARD CHART -->
+
+                </div>
+                <!-- END PAGE CONTENT WRAPPER -->
+            </div>
+            <!-- END PAGE CONTENT -->
+        </div>
+
+<script src="static/js/d3.wordcloud.js" charset="UTF-8"></script>
+                <script src="static/js/d3.layout.cloud.js" charset="UTF-8"></script>
+
+                <script type="text/javascript" src="static/js/plugins/jquery/jquery.min.js"></script>
+        <script type="text/javascript" src="static/js/plugins/jquery/jquery-ui.min.js"></script>
+        <script type="text/javascript" src="static/js/plugins/bootstrap/bootstrap.min.js"></script>
+        <!-- END PLUGINS -->
+
+        <!-- START THIS PAGE PLUGINS-->
+        <script type='text/javascript' src="static/js/plugins/icheck/icheck.min.js"></script>
+        <script type="text/javascript" src="static/js/plugins/mcustomscrollbar/jquery.mCustomScrollbar.min.js"></script>
+
+        <script type="text/javascript" src="static/js/plugins/morris/raphael-min.js"></script>
+        <script type="text/javascript" src="static/js/plugins/morris/morris.min.js"></script>
+        <script type='text/javascript' src="static/js/plugins/jvectormap/jquery-jvectormap-1.2.2.min.js"></script>
+        <script type='text/javascript' src="static/js/plugins/jvectormap/jquery-jvectormap-world-mill-en.js"></script>
+        <script type="text/javascript" src="static/js/plugins/owl/owl.carousel.min.js"></script>
+
+        <script type="text/javascript" src="static/js/settings.js"></script>
+        <script type="text/javascript" src="static/js/plugins.js"></script>
+
+        <script type="text/javascript" src="static/js/index_charts.js"></script>
+        <script src="static/celery_progress/celery_progress.js"></script>
+        <script>drawcharts({{ ics.count }}, {{ coordinates.count }}, {{ports|safe}}, {{ countries|safe }});</script>
+        <script>
+        {% if task_id %}
+
+function customProgress(progressBarElement, progressBarMessageElement, progress) {
+    progressBarMessageElement.innerHTML = (
+      "about " + progress.percent + "% of the way through " + progress.total + ' custom thingies.'
+    );
+}
+    var progressUrl = "{% url 'celery_progress:task_status' task_id %}";
+  CeleryProgressBar.initProgressBar(progressUrl);
+        {% endif %}
+</script>
+<script type="text/javascript">
+      d3v3.wordcloud()
+        .size([400, 200])
+        .selector('#wordcloud')
+        .words([{% for vuln, link in vulns %} {text: "{{  vuln }}", size: "12"}, {% endfor %}])
+        .onwordclick(function(d, i) {
+  window.location = d.url;
+})
+        .start();
+    </script>
+
+
+
+        <!-- END TEMPLATE -->
+    <!-- END SCRIPTS -->         
+    </body>
+</html>
+
+{% endblock %}
+
+
+
+
+
