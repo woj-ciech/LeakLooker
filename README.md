@@ -1,6 +1,10 @@
 # LeakLooker - Powered by Binaryedge.io
 Find open databases/services
 
+GUI
+https://www.offensiveosint.io/leaklooker-gui-discover-browse-and-monitor-database-source-code-leaks/
+https://github.com/woj-ciech/LeakLooker-X
+
 New version supports:
 - Elasticsearch
 - CouchDB
@@ -22,12 +26,10 @@ Queries:
 https://docs.binaryedge.io/api-v2/
 
 Background:
-
-v1: https://medium.com/@woj_ciech/leaklooker-find-open-databases-in-a-second-9da4249c8472
-
-v2: https://medium.com/hackernoon/leaklooker-v2-find-more-open-servers-and-source-code-leaks-25e671700e41
-
-v3: https://medium.com/@woj_ciech/leaklooker-part-3-dna-samples-internal-files-and-more-967e794fa031
+https://www.offensiveosint.io/leaklooker-find-open-databases-in-seconds/
+https://www.offensiveosint.io/fun-with-amazon-s3-leaks-and-bucket-takeover-attack/
+https://www.offensiveosint.io/leaklooker-v2-find-more-open-servers-and-source-code-leaks/
+https://www.offensiveosint.io/leaklooker-part-3-dna-samples-internal-files-and-more/
 
 ## Requirements:
 Python 3 &
