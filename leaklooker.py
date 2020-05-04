@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from hurry.filesize import size
 from colorama import Fore
 import json
